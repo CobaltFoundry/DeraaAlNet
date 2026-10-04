@@ -13,7 +13,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.somood.app.databinding.ActivityMainBinding
 import java.util.Calendar
-import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
@@ -36,13 +35,24 @@ class MainActivity : AppCompatActivity() {
         ScheduleHelper.scheduleDaily(this)
         LogHelper.init(this)
 
-        binding.btnToggle.setOnClickListener { onToggleClicked() }
+        // أزرار أسفل الشاشة
         binding.btnLog.setOnClickListener {
             startActivity(Intent(this, LogActivity::class.java))
         }
+
         binding.btnShare.setOnClickListener {
             val url = getString(R.string.telegram_url)
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+        }
+
+        // زر المينيو (اختياري - حالياً فاضي)
+        binding.btnMenu.setOnClickListener {
+            // ممكن نضيف قائمة إعدادات لاحقاً
+        }
+
+        // تفعيل / إيقاف بالضغط على الحلقة الكبيرة
+        binding.progressRing.setOnClickListener {
+            onToggleClicked()
         }
     }
 
@@ -113,27 +123,33 @@ class MainActivity : AppCompatActivity() {
         val isActive = BlockVpnService.isRunning
         val minutesLeft = getMinutesLeftInWindow()
 
-        binding.statusText.text = if (isActive) getString(R.string.status_active) else getString(R.string.status_inactive)
+        // حالة النص والنقطة
+        binding.statusText.text = if (isActive) {
+            getString(R.string.status_active)
+        } else {
+            getString(R.string.status_inactive)
+        }
+
         binding.statusText.setTextColor(
             getColor(if (isActive) R.color.green_active else R.color.text_secondary)
         )
-
-        if (isActive && minutesLeft > 0) {
-            binding.countdownText.text = toArabicDigits(minutesLeft.toString())
-            binding.countdownLabel.text = getString(R.string.minutes_left)
-            binding.countdownContainer.visibility = View.VISIBLE
-        } else if (isActive) {
-            binding.countdownText.text = toArabicDigits("0")
-            binding.countdownLabel.text = getString(R.string.minutes_left)
-            binding.countdownContainer.visibility = View.VISIBLE
-        } else {
-            binding.countdownContainer.visibility = View.GONE
-        }
-
-        binding.btnToggle.text = if (isActive) "إيقاف وضع الصمود" else "تفعيل وضع الصمود"
-        binding.ringView.setBackgroundResource(
-            if (isActive) R.drawable.ring_active else R.drawable.ring_inactive
+        binding.statusDot.setBackgroundResource(
+            if (isActive) R.drawable.dot_active else R.drawable.dot_inactive
         )
+
+        // العداد + الشريط الدائري
+        if (isActive) {
+            val hours = minutesLeft / 60
+            val mins = minutesLeft % 60
+            val timeStr = String.format("%d:%02d", hours, mins)
+            binding.countdownText.text = toArabicDigits(timeStr)
+            binding.progressRing.progress = minutesLeft.coerceIn(0, 180)
+            binding.remainingChip.visibility = View.VISIBLE
+        } else {
+            binding.countdownText.text = toArabicDigits("٠:٠٠")
+            binding.progressRing.progress = 0
+            binding.remainingChip.visibility = View.GONE
+        }
     }
 
     private fun getMinutesLeftInWindow(): Int {
@@ -142,14 +158,18 @@ class MainActivity : AppCompatActivity() {
             set(Calendar.HOUR_OF_DAY, 21)
             set(Calendar.MINUTE, 0)
             set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
         }
         if (now.after(end)) return 0
+
         val start = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 18)
             set(Calendar.MINUTE, 0)
             set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
         }
         if (now.before(start)) return 0
+
         val diffMs = end.timeInMillis - now.timeInMillis
         return (diffMs / 60000).toInt().coerceAtLeast(0)
     }
