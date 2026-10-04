@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="@drawable/card_bg"
+    android:background="@drawable/card_dark"
     android:padding="16dp"
     android:layout_marginBottom="12dp">
 
@@ -11,9 +11,10 @@
         android:id="@+id/dayText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@color/white"
+        android:textColor="#FFFFFF"
         android:textSize="16sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:fontFamily="@font/tajawal" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -26,16 +27,18 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp" />
+            android:textColor="#8A9BA8"
+            android:textSize="14sp"
+            android:fontFamily="@font/tajawal" />
 
         <TextView
             android:id="@+id/percentText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/primary"
+            android:textColor="#00A6D0"
             android:textSize="14sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:fontFamily="@font/tajawal" />
     </LinearLayout>
 
     <ProgressBar
@@ -45,5 +48,5 @@
         android:layout_height="8dp"
         android:layout_marginTop="8dp"
         android:max="100"
-        android:progressTint="@color/primary" />
+        android:progressTint="#00A6D0" />
 </LinearLayout>
