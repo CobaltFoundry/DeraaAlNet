@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">درع النت</string>
+    <string name="subtitle">هنرجع حقنا</string>
+    <string name="schedule_text">كل يوم من ٦ مساءً إلى ٩ مساءً</string>
+    <string name="warning_text">الإنترنت هيتم قطعه تلقائيًا في المواعيد المحددة</string>
+    <string name="status_active">نشط</string>
+    <string name="status_inactive">غير نشط</string>
+    <string name="mode_title">وضع الصمود</string>
+    <string name="minutes_left">دقيقة</string>
+    <string name="pre_notify">باقي ١٠ دقائق علي تفعيل وضع الصمود</string>
+    <string name="remaining_chip">متبقى ١٠ دقائق على نهاية وضع الصمود</string>
+    <string name="btn_log">السجل</string>
+    <string name="btn_share">عرف غيرك</string>
+    <string name="footer">مع بعض نرجع حقنا</string>
+    <string name="confirm_title">تأكيد الإيقاف</string>
+    <string name="confirm_message">أجمد يا بطل</string>
+    <string name="confirm_yes">إيقاف</string>
+    <string name="confirm_no">إلغاء</string>
+    <string name="notification_title">درع النت</string>
+    <string name="notification_text">وضع الصمود شغال - الإنترنت مقطوع</string>
+    <string name="vpn_permission_needed">لازم توافق على صلاحية الـ VPN عشان التطبيق يشتغل</string>
+    <string name="log_title">السجل</string>
+    <string name="no_logs">مفيش سجل لسه</string>
+    <string name="sound_label">صوتنا</string>
+    <string name="sound_status">مش مسموع</string>
+    <string name="package_label">الباقة</string>
+    <string name="package_status">مسروقة</string>
+    <string name="speed_label">السرعة</string>
+    <string name="speed_status">ضعيفة</string>
+    <string name="telegram_url">https://t.me/weAllFwe</string>
+</resources>
