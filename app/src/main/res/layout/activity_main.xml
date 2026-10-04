@@ -3,227 +3,403 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background"
+    android:background="#0B0F14"
     android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="24dp"
         android:gravity="center_horizontal">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <!-- Top bar -->
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/app_name"
-            android:textColor="@color/primary"
-            android:textSize="28sp"
-            android:textStyle="bold"
-            android:layout_marginTop="16dp" />
+            android:layout_marginBottom="8dp">
+
+            <ImageView
+                android:id="@+id/btnMenu"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:padding="8dp"
+                android:src="@drawable/ic_menu"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                app:tint="#8A9BA8" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_name"
+                    android:textColor="#FFFFFF"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:fontFamily="@font/tajawal" />
+
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_marginStart="6dp"
+                    android:src="@drawable/ic_shield" />
+            </LinearLayout>
+        </RelativeLayout>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/subtitle"
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp"
-            android:layout_marginBottom="24dp" />
+            android:textColor="#8A9BA8"
+            android:textSize="13sp"
+            android:fontFamily="@font/tajawal"
+            android:layout_marginBottom="18dp" />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/schedule_text"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/tajawal"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/warning_text"
+            android:textColor="#6B7C8A"
+            android:textSize="12sp"
+            android:fontFamily="@font/tajawal"
+            android:layout_marginBottom="28dp"
+            android:gravity="center" />
+
+        <!-- Big Ring + Hexagon -->
         <FrameLayout
-            android:layout_width="180dp"
-            android:layout_height="180dp"
-            android:layout_marginBottom="16dp">
+            android:layout_width="240dp"
+            android:layout_height="240dp"
+            android:layout_marginBottom="20dp">
 
             <View
-                android:id="@+id/ringView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@drawable/ring_inactive" />
+                android:background="@drawable/ring_ticks" />
+
+            <ProgressBar
+                android:id="@+id/progressRing"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:indeterminate="false"
+                android:max="180"
+                android:progress="0"
+                android:progressDrawable="@drawable/circular_progress"
+                android:rotation="-90" />
+
+            <View
+                android:layout_width="160dp"
+                android:layout_height="160dp"
+                android:layout_gravity="center"
+                android:background="@drawable/hexagon_outline" />
 
             <LinearLayout
-                android:id="@+id/countdownContainer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:orientation="vertical"
-                android:gravity="center"
-                android:visibility="gone">
+                android:gravity="center">
 
                 <TextView
                     android:id="@+id/countdownText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/white"
-                    android:textSize="36sp"
-                    android:textStyle="bold" />
+                    android:text="٠:٠٠"
+                    android:textColor="#00B4FF"
+                    android:textSize="42sp"
+                    android:textStyle="bold"
+                    android:fontFamily="@font/tajawal"
+                    android:includeFontPadding="false" />
 
                 <TextView
                     android:id="@+id/countdownLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/minutes_left"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
-
+                    android:textColor="#6B7C8A"
+                    android:textSize="13sp"
+                    android:fontFamily="@font/tajawal"
+                    android:layout_marginTop="2dp" />
             </LinearLayout>
-
         </FrameLayout>
 
-        <TextView
-            android:id="@+id/statusText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/status_inactive"
-            android:textColor="@color/text_secondary"
-            android:textSize="16sp"
-            android:layout_marginBottom="8dp" />
-
+        <!-- وضع الصمود -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/schedule_text"
-            android:textColor="@color/text_secondary"
-            android:textSize="13sp"
-            android:layout_marginBottom="24dp" />
+            android:text="@string/mode_title"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/tajawal"
+            android:layout_marginBottom="6dp" />
 
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="14dp">
+
+            <View
+                android:layout_width="40dp"
+                android:layout_height="2dp"
+                android:background="@drawable/wave_line" />
+
+            <TextView
+                android:id="@+id/statusText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/status_inactive"
+                android:textColor="#8A9BA8"
+                android:textSize="14sp"
+                android:fontFamily="@font/tajawal"
+                android:layout_marginHorizontal="8dp" />
+
+            <View
+                android:id="@+id/statusDot"
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:background="@drawable/dot_inactive" />
+
+            <View
+                android:layout_width="40dp"
+                android:layout_height="2dp"
+                android:background="@drawable/wave_line"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <!-- Chip -->
+        <LinearLayout
+            android:id="@+id/remainingChip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/chip_bg"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="8dp"
+            android:layout_marginBottom="28dp"
+            android:visibility="gone">
+            <TextView
+                android:id="@+id/remainingText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/remaining_chip"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:fontFamily="@font/tajawal" />
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_marginStart="6dp"
+                android:src="@drawable/ic_info"
+                app:tint="#00A6D0" />
+        </LinearLayout>
+
+        <!-- Three cards -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="24dp">
+            android:layout_marginBottom="20dp">
 
+            <!-- صوتنا -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:background="@drawable/card_bg"
-                android:padding="12dp"
+                android:background="@drawable/card_dark"
+                android:paddingVertical="16dp"
                 android:layout_marginEnd="6dp">
+
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:src="@drawable/ic_sound_mute"
+                    app:tint="#FF5252" />
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/sound_label"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:fontFamily="@font/tajawal"
+                    android:layout_marginTop="8dp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/sound_status"
-                    android:textColor="@color/red_status"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
+                    android:textColor="#FF5252"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/tajawal"
+                    android:layout_marginTop="2dp" />
             </LinearLayout>
 
+            <!-- الباقة -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:background="@drawable/card_bg"
-                android:padding="12dp"
+                android:background="@drawable/card_dark"
+                android:paddingVertical="16dp"
                 android:layout_marginHorizontal="6dp">
+
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:src="@drawable/ic_sim"
+                    app:tint="#FF5252" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/package_label"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:fontFamily="@font/tajawal"
+                    android:layout_marginTop="8dp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/package_status"
-                    android:textColor="@color/orange_status"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
+                    android:textColor="#FF5252"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/tajawal"
+                    android:layout_marginTop="2dp" />
             </LinearLayout>
-
+            <!-- السرعة -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:background="@drawable/card_bg"
-                android:padding="12dp"
+                android:background="@drawable/card_dark"
+                android:paddingVertical="16dp"
                 android:layout_marginStart="6dp">
+
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:src="@drawable/ic_speed"
+                    app:tint="#FFAB40" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/speed_label"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:fontFamily="@font/tajawal"
+                    android:layout_marginTop="8dp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/speed_status"
-                    android:textColor="@color/red_status"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
+                    android:textColor="#FFAB40"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/tajawal"
+                    android:layout_marginTop="2dp" />
             </LinearLayout>
-
         </LinearLayout>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnToggle"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:text="تفعيل وضع الصمود"
-            android:textSize="16sp"
-            android:layout_marginBottom="16dp"
-            app:backgroundTint="@color/primary"
-            app:cornerRadius="16dp" />
-
+        <!-- Bottom buttons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnLog"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:text="@string/btn_log"
-                android:textColor="@color/primary"
-                android:layout_marginEnd="8dp"
-                app:strokeColor="@color/primary"
-                app:cornerRadius="12dp" />
-            <com.google.android.material.button.MaterialButton
+            <LinearLayout
                 android:id="@+id/btnShare"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="52dp"
                 android:layout_weight="1"
-                android:text="@string/btn_share"
-                android:textColor="@color/primary"
-                android:layout_marginStart="8dp"
-                app:strokeColor="@color/primary"
-                app:cornerRadius="12dp" />
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:background="@drawable/btn_dark"
+                android:layout_marginEnd="8dp">
 
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_share"
+                    app:tint="#00A6D0" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btn_share"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/tajawal"
+                    android:layout_marginStart="8dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/btnLog"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:background="@drawable/btn_dark"
+                android:layout_marginStart="8dp">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_log"
+                    app:tint="#00A6D0" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btn_log"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/tajawal"
+                    android:layout_marginStart="8dp" />
+            </LinearLayout>
         </LinearLayout>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/footer"
-            android:textColor="@color/text_secondary"
+            android:textColor="#5A6A78"
             android:textSize="12sp"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="16dp" />
+            android:fontFamily="@font/tajawal"
+            android:layout_marginTop="28dp" />
 
     </LinearLayout>
-
 </ScrollView>
