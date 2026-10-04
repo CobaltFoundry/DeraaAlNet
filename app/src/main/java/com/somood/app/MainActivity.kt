@@ -1,4 +1,4 @@
-[10/4/2026 4:39 PM] EMad ELdin: package com.somood.app
+package com.somood.app
 
 import android.app.Activity
 import android.content.Intent
@@ -120,7 +120,7 @@ class MainActivity : AppCompatActivity() {
 
         if (isActive && minutesLeft > 0) {
             binding.countdownText.text = toArabicDigits(minutesLeft.toString())
-[10/4/2026 4:39 PM] EMad ELdin: binding.countdownLabel.text = getString(R.string.minutes_left)
+            binding.countdownLabel.text = getString(R.string.minutes_left)
             binding.countdownContainer.visibility = View.VISIBLE
         } else if (isActive) {
             binding.countdownText.text = toArabicDigits("0")
