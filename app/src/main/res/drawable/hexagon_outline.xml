@@ -4,9 +4,12 @@
     android:height="160dp"
     android:viewportWidth="100"
     android:viewportHeight="100">
+    <!-- تساعي منتظم (٩ أضلاع) بحواف دائرية -->
     <path
-        android:pathData="M50,5 L90,27.5 L90,72.5 L50,95 L10,72.5 L10,27.5 Z"
+        android:pathData="M50,8 L77,18 L91,43 L86,71 L64,89 L36,89 L14,71 L9,43 L23,18 Z"
         android:strokeWidth="3.5"
         android:strokeColor="#00B4FF"
-        android:fillColor="#00000000" />
+        android:fillColor="#00000000"
+        android:strokeLineJoin="round"
+        android:strokeLineCap="round" />
 </vector>
