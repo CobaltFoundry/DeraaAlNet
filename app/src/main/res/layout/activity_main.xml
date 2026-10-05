@@ -13,8 +13,7 @@
         android:paddingHorizontal="20dp"
         android:paddingTop="12dp"
         android:paddingBottom="24dp"
-        android:gravity="center"
-        android:maxLines="3">
+        android:gravity="center_horizontal">
 
         <!-- Top bar -->
         <RelativeLayout
@@ -70,10 +69,11 @@
             android:textColor="#6B7C8A"
             android:textSize="12sp"
             android:fontFamily="@font/tajawal"
-            android:layout_marginBottom="28dp"
+            android:layout_marginBottom="8dp"
             android:gravity="center" />
 
-       <TextView
+        <!-- حالة الجدولة -->
+        <TextView
             android:id="@+id/scheduleStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -81,9 +81,9 @@
             android:textColor="#00E676"
             android:textSize="13sp"
             android:fontFamily="@font/tajawal"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="20dp" />
 
-        <!-- Big Ring + Hexagon -->
+        <!-- Big Ring + Nonagon -->
         <FrameLayout
             android:layout_width="240dp"
             android:layout_height="240dp"
@@ -193,27 +193,23 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical"
+            android:gravity="center"
             android:background="@drawable/chip_bg"
             android:paddingHorizontal="14dp"
             android:paddingVertical="8dp"
             android:layout_marginBottom="28dp"
             android:visibility="gone">
+
             <TextView
                 android:id="@+id/remainingText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/remaining_chip"
+                android:text=""
                 android:textColor="#FFFFFF"
                 android:textSize="12sp"
-                android:fontFamily="@font/tajawal" />
-
-            <ImageView
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:layout_marginStart="6dp"
-                android:src="@drawable/ic_info"
-                app:tint="#00A6D0" />
+                android:fontFamily="@font/tajawal"
+                android:gravity="center"
+                android:maxLines="3" />
         </LinearLayout>
 
         <!-- Three cards -->
@@ -223,7 +219,6 @@
             android:orientation="horizontal"
             android:layout_marginBottom="20dp">
 
-            <!-- صوتنا -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -259,7 +254,6 @@
                     android:layout_marginTop="2dp" />
             </LinearLayout>
 
-            <!-- الباقة -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -294,7 +288,7 @@
                     android:fontFamily="@font/tajawal"
                     android:layout_marginTop="2dp" />
             </LinearLayout>
-            <!-- السرعة -->
+
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
