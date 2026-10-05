@@ -4,10 +4,26 @@
     android:height="24dp"
     android:viewportWidth="24"
     android:viewportHeight="24">
+
+    <!-- درع خارجي -->
     <path
-        android:fillColor="#00A6D0"
-        android:pathData="M12,2 L4,5 V11.1 C4,16.1 7.4,20.7 12,22 C16.6,20.7 20,16.1 20,11.1 V5 L12,2 Z"/>
+        android:fillColor="#0A1F3D"
+        android:pathData="M12,2 L4,5.5 V11.5 C4,16.5 7.5,20.8 12,22 C16.5,20.8 20,16.5 20,11.5 V5.5 L12,2 Z" />
+
+    <!-- إطار تركواز -->
     <path
-        android:fillColor="#0B0F14"
-        android:pathData="M12,4.2 L6,6.5 V11.1 C6,14.9 8.6,18.3 12,19.4 C15.4,18.3 18,14.9 18,11.1 V6.5 L12,4.2 Z"/>
+        android:strokeWidth="1.2"
+        android:strokeColor="#00B4D8"
+        android:fillColor="#00000000"
+        android:pathData="M12,2 L4,5.5 V11.5 C4,16.5 7.5,20.8 12,22 C16.5,20.8 20,16.5 20,11.5 V5.5 L12,2 Z" />
+
+    <!-- الشكل الأبيض في النص -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M12,7 C9.5,7 7.5,9 7.5,11.5 V14.5 C7.5,17 9.5,19 12,19 C13.2,19 14.2,18.4 14.8,17.5 L13.2,16.2 C13,16.7 12.5,17 12,17 C10.6,17 9.5,15.9 9.5,14.5 V11.5 C9.5,10.1 10.6,9 12,9 C12.5,9 13,9.3 13.2,9.8 L14.8,8.5 C14.2,7.6 13.2,7 12,7 Z" />
+
+    <!-- نقاط صغيرة -->
+    <path android:fillColor="#00D4FF" android:pathData="M7.5,10.5 m-0.9,0 a0.9,0.9 0,1,1 1.8,0 a0.9,0.9 0,1,1 -1.8,0" />
+    <path android:fillColor="#00D4FF" android:pathData="M16.5,10.5 m-0.9,0 a0.9,0.9 0,1,1 1.8,0 a0.9,0.9 0,1,1 -1.8,0" />
+    <path android:fillColor="#00D4FF" android:pathData="M12,5.5 m-0.8,0 a0.8,0.8 0,1,1 1.6,0 a0.8,0.8 0,1,1 -1.6,0" />
 </vector>
