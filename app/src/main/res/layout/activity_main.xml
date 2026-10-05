@@ -73,6 +73,16 @@
             android:layout_marginBottom="28dp"
             android:gravity="center" />
 
+       <TextView
+            android:id="@+id/scheduleStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="الجدولة اليومية مفعّلة ✓"
+            android:textColor="#00E676"
+            android:textSize="13sp"
+            android:fontFamily="@font/tajawal"
+            android:layout_marginBottom="16dp" />
+
         <!-- Big Ring + Hexagon -->
         <FrameLayout
             android:layout_width="240dp"
