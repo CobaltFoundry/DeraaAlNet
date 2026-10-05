@@ -1,5 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
+shape<?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- الخلفية الغامقة -->
     <item>
         <shape
             android:shape="ring"
@@ -9,6 +10,7 @@
             <solid android:color="#1A2A35" />
         </shape>
     </item>
+    <!-- القوس اللي بيتملي مع الوقت -->
     <item>
         <shape
             android:shape="ring"
