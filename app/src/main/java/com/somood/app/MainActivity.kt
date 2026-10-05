@@ -206,7 +206,7 @@ class MainActivity : AppCompatActivity() {
 
             // الرسالة المطلوبة
             binding.remainingText.text =
-                "${toArabicDigits(elapsed.toString())} دقيقة من غير نت، عاش💪🏻"
+    "${toArabicDigits(elapsed.toString())} دقيقة من غير نت\n💪 عاش 💪"
             binding.remainingChip.visibility = View.VISIBLE
         }
 
