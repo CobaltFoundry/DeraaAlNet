@@ -4,9 +4,12 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.net.VpnService
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
+import android.provider.Settings
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -32,10 +35,12 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // جدولة يومية + حماية
         ScheduleHelper.scheduleDaily(this)
         LogHelper.init(this)
+        requestBatteryOptimizationExemption()
+        requestExactAlarmPermission()
 
-        // أزرار أسفل الشاشة
         binding.btnLog.setOnClickListener {
             startActivity(Intent(this, LogActivity::class.java))
         }
@@ -45,12 +50,11 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
         }
 
-        // زر المينيو (اختياري - حالياً فاضي)
         binding.btnMenu.setOnClickListener {
-            // ممكن نضيف قائمة إعدادات لاحقاً
+            // قائمة لاحقاً إن لزم
         }
 
-        // تفعيل / إيقاف بالضغط على الحلقة الكبيرة
+        // تفعيل / إيقاف بالضغط على الحلقة
         binding.progressRing.setOnClickListener {
             onToggleClicked()
         }
@@ -58,12 +62,47 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        // إعادة الجدولة كل ما التطبيق يرجع (حماية من ضياع المواعيد)
+        ScheduleHelper.scheduleDaily(this)
         handler.post(updateRunnable)
     }
 
     override fun onPause() {
         super.onPause()
         handler.removeCallbacks(updateRunnable)
+    }
+
+    private fun requestBatteryOptimizationExemption() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val pm = getSystemService(POWER_SERVICE) as PowerManager
+            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                try {
+                    val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                        data = Uri.parse("package:$packageName")
+                    }
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    try {
+                        startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+                    } catch (_: Exception) {
+                    }
+                }
+            }
+        }
+    }
+
+    private fun requestExactAlarmPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (!ScheduleHelper.canScheduleExact(this)) {
+                try {
+                    val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                        data = Uri.parse("package:$packageName")
+                    }
+                    startActivity(intent)
+                } catch (_: Exception) {
+                }
+            }
+        }
     }
 
     private fun onToggleClicked() {
@@ -122,6 +161,7 @@ class MainActivity : AppCompatActivity() {
     private fun updateUI() {
         val isActive = BlockVpnService.isRunning
         val minutesLeft = getMinutesLeftInWindow()
+        val inScheduledWindow = isInScheduledWindow()
 
         // حالة النص والنقطة
         binding.statusText.text = if (isActive) {
@@ -129,7 +169,6 @@ class MainActivity : AppCompatActivity() {
         } else {
             getString(R.string.status_inactive)
         }
-
         binding.statusText.setTextColor(
             getColor(if (isActive) R.color.green_active else R.color.text_secondary)
         )
@@ -137,22 +176,50 @@ class MainActivity : AppCompatActivity() {
             if (isActive) R.drawable.dot_active else R.drawable.dot_inactive
         )
 
-        // العداد + الشريط الدائري
-        if (isActive) {
+        // العداد + الدائرة الحية
+        if (isActive && inScheduledWindow && minutesLeft > 0) {
+            // عرض الوقت المتبقي الفعلي (س:دد)
             val hours = minutesLeft / 60
             val mins = minutesLeft % 60
             val timeStr = String.format("%d:%02d", hours, mins)
             binding.countdownText.text = toArabicDigits(timeStr)
-            binding.progressRing.progress = minutesLeft.coerceIn(0, 180)
+
+            // الدائرة تتملي مع مرور الوقت (من ٠ عند ٦ مساءً إلى ١٨٠ عند ٩ مساءً)
+            val elapsed = (180 - minutesLeft).coerceIn(0, 180)
+            binding.progressRing.progress = elapsed
+
+            // جملة المتبقي تظهر فقط داخل المواعيد المحددة
+            binding.remainingText.text =
+                "متبقى ${toArabicDigits(minutesLeft.toString())} دقيقة على نهاية وضع الصمود"
             binding.remainingChip.visibility = View.VISIBLE
+        } else if (isActive) {
+            // تفعيل يدوي خارج المواعيد: عداد صفر، بدون جملة المتبقي
+            binding.countdownText.text = toArabicDigits("٠:٠٠")
+            binding.progressRing.progress = 0
+            binding.remainingChip.visibility = View.GONE
         } else {
+            // غير نشط
             binding.countdownText.text = toArabicDigits("٠:٠٠")
             binding.progressRing.progress = 0
             binding.remainingChip.visibility = View.GONE
         }
     }
 
+    /** هل الآن داخل نافذة ٦ مساءً – ٩ مساءً؟ */
+    private fun isInScheduledWindow(): Boolean {
+        val now = Calendar.getInstance()
+        val hour = now.get(Calendar.HOUR_OF_DAY)
+        val minute = now.get(Calendar.MINUTE)
+        val totalMinutes = hour * 60 + minute
+        val start = 18 * 60      // ٦ مساءً
+        val end = 21 * 60        // ٩ مساءً
+        return totalMinutes in start until end
+    }
+
+    /** الدقايق المتبقية حتى ٩ مساءً (٠ لو خارج النافذة) */
     private fun getMinutesLeftInWindow(): Int {
+        if (!isInScheduledWindow()) return 0
+
         val now = Calendar.getInstance()
         val end = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 21)
@@ -160,16 +227,6 @@ class MainActivity : AppCompatActivity() {
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
         }
-        if (now.after(end)) return 0
-
-        val start = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 18)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-        if (now.before(start)) return 0
-
         val diffMs = end.timeInMillis - now.timeInMillis
         return (diffMs / 60000).toInt().coerceAtLeast(0)
     }
