@@ -159,51 +159,65 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateUI() {
-        val isActive = BlockVpnService.isRunning
-        val minutesLeft = getMinutesLeftInWindow()
-        val inScheduledWindow = isInScheduledWindow()
+    val isActive = BlockVpnService.isRunning
+    val minutesLeft = getMinutesLeftInWindow()
+    val inScheduledWindow = isInScheduledWindow()
 
-        // حالة النص والنقطة
-        binding.statusText.text = if (isActive) {
-            getString(R.string.status_active)
-        } else {
-            getString(R.string.status_inactive)
-        }
-        binding.statusText.setTextColor(
-            getColor(if (isActive) R.color.green_active else R.color.text_secondary)
-        )
-        binding.statusDot.setBackgroundResource(
-            if (isActive) R.drawable.dot_active else R.drawable.dot_inactive
-        )
+    // حالة النص والنقطة
+    binding.statusText.text = if (isActive) {
+        getString(R.string.status_active)
+    } else {
+        getString(R.string.status_inactive)
+    }
+    binding.statusText.setTextColor(
+        getColor(if (isActive) R.color.green_active else R.color.text_secondary)
+    )
+    binding.statusDot.setBackgroundResource(
+        if (isActive) R.drawable.dot_active else R.drawable.dot_inactive
+    )
 
-        // العداد + الدائرة الحية
-        if (isActive && inScheduledWindow && minutesLeft > 0) {
-            // عرض الوقت المتبقي الفعلي (س:دد)
+    when {
+        // داخل المواعيد المحددة (٦–٩) والوضع شغال
+        isActive && inScheduledWindow && minutesLeft > 0 -> {
             val hours = minutesLeft / 60
             val mins = minutesLeft % 60
             val timeStr = String.format("%d:%02d", hours, mins)
             binding.countdownText.text = toArabicDigits(timeStr)
 
-            // الدائرة تتملي مع مرور الوقت (من ٠ عند ٦ مساءً إلى ١٨٠ عند ٩ مساءً)
+            // الدائرة تتملي مع مرور الوقت
             val elapsed = (180 - minutesLeft).coerceIn(0, 180)
             binding.progressRing.progress = elapsed
 
-            // جملة المتبقي تظهر فقط داخل المواعيد المحددة
             binding.remainingText.text =
                 "متبقى ${toArabicDigits(minutesLeft.toString())} دقيقة على نهاية وضع الصمود"
             binding.remainingChip.visibility = View.VISIBLE
-        } else if (isActive) {
-            // تفعيل يدوي خارج المواعيد: عداد صفر، بدون جملة المتبقي
-            binding.countdownText.text = toArabicDigits("٠:٠٠")
-            binding.progressRing.progress = 0
-            binding.remainingChip.visibility = View.GONE
-        } else {
-            // غير نشط
+        }
+
+        // خارج المواعيد + تفعيل يدوي → عداد تصاعدي
+        isActive && !inScheduledWindow -> {
+            val elapsed = LogHelper.getSessionElapsedMinutes(this)
+            val hours = elapsed / 60
+            val mins = elapsed % 60
+            val timeStr = String.format("%d:%02d", hours, mins)
+            binding.countdownText.text = toArabicDigits(timeStr)
+
+            // الدائرة تتملي تدريجيًا مع الوقت (حد أقصى ١٨٠)
+            binding.progressRing.progress = elapsed.coerceIn(0, 180)
+
+            // الرسالة المطلوبة
+            binding.remainingText.text =
+                "${toArabicDigits(elapsed.toString())} دقيقة من غير نت، عاش💪🏻"
+            binding.remainingChip.visibility = View.VISIBLE
+        }
+
+        // غير نشط
+        else -> {
             binding.countdownText.text = toArabicDigits("٠:٠٠")
             binding.progressRing.progress = 0
             binding.remainingChip.visibility = View.GONE
         }
     }
+}
 
     /** هل الآن داخل نافذة ٦ مساءً – ٩ مساءً؟ */
     private fun isInScheduledWindow(): Boolean {
