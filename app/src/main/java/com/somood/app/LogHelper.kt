@@ -23,6 +23,12 @@ object LogHelper {
         val prefs = prefs(context)
         if (!prefs.contains(KEY_SESSION_START)) {
             prefs.edit().putLong(KEY_SESSION_START, System.currentTimeMillis()).apply()
+fun getSessionElapsedMinutes(context: Context): Int {
+    val prefs = prefs(context)
+    val start = prefs.getLong(KEY_SESSION_START, 0L)
+    if (start == 0L) return 0
+    return ((System.currentTimeMillis() - start) / 60000).toInt().coerceAtLeast(0)
+}
         }
     }
 
