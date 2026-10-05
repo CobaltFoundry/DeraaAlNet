@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0B0F14"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center_horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="درع النت"
+            android:textColor="#00A6D0"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/tajawal"
+            android:layout_marginTop="32dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="٣ خطوات وخلاص"
+            android:textColor="#8A9BA8"
+            android:textSize="14sp"
+            android:fontFamily="@font/tajawal"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="32dp" />
+
+        <!-- خطوة 1 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_dark"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="١ — صلاحية الـ VPN"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/tajawal" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="اضغط الزر ووافق عشان التطبيق يقدر يقطع النت"
+                android:textColor="#8A9BA8"
+                android:textSize="13sp"
+                android:fontFamily="@font/tajawal"
+                android:layout_marginTop="6dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnVpn"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="الموافقة على VPN"
+                android:textSize="14sp"
+                android:fontFamily="@font/tajawal"
+                app:backgroundTint="#00A6D0"
+                app:cornerRadius="12dp"
+                android:layout_marginTop="12dp" />
+        </LinearLayout>
+
+        <!-- خطوة 2 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_dark"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="٢ — استثناء البطارية"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/tajawal" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="مهم جدًا عشان يشتغل لوحده كل يوم الساعة ٦"
+                android:textColor="#8A9BA8"
+                android:textSize="13sp"
+                android:fontFamily="@font/tajawal"
+                android:layout_marginTop="6dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnBattery"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="استثناء من تحسين البطارية"
+                android:textSize="14sp"
+                android:fontFamily="@font/tajawal"
+                app:backgroundTint="#00A6D0"
+                app:cornerRadius="12dp"
+                android:layout_marginTop="12dp" />
+        </LinearLayout>
+
+        <!-- خطوة 3 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_dark"
+            android:padding="16dp"
+            android:layout_marginBottom="24dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="٣ — سيّب التطبيق"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/tajawal" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="ما تعملش Force Stop من الإعدادات، وسيّبه في الخلفية"
+                android:textColor="#8A9BA8"
+                android:textSize="13sp"
+                android:fontFamily="@font/tajawal"
+                android:layout_marginTop="6dp" />
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnStart"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="ابدأ — هنرجع حقنا"
+            android:textSize="16sp"
+            android:fontFamily="@font/tajawal"
+            app:backgroundTint="#00A6D0"
+            app:cornerRadius="16dp"
+            android:layout_marginBottom="24dp" />
+
+    </LinearLayout>
+</ScrollView>
