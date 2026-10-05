@@ -34,8 +34,6 @@
             android:name=".MainActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
-            </intent-filter>
-        </activity>
 
         <activity
             android:name=".LogActivity"
@@ -68,4 +66,5 @@
             android:exported="false" />
 
     </application>
+
 </manifest>
