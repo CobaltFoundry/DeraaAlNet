@@ -4,8 +4,8 @@ import android.content.Context
 
 object DurationHelper {
     private const val PREF = "somood_duration"
-    private const val KEY_MINUTES = "selected_minutes" // 0 = لحد ما يوقف يدوي
-    private const val KEY_END_AT = "session_end_at"     // millis, 0 لو مفيش نهاية
+    private const val KEY_MINUTES = "selected_minutes"
+    private const val KEY_END_AT = "session_end_at"
 
     fun getSelectedMinutes(context: Context): Int {
         return context.getSharedPreferences(PREF, Context.MODE_PRIVATE)
@@ -35,7 +35,6 @@ object DurationHelper {
         setSessionEndAt(context, 0L)
     }
 
-    /** دقايق متبقية في الجلسة (أو -1 لو مفيش نهاية محددة) */
     fun getRemainingMinutes(context: Context): Int {
         val end = getSessionEndAt(context)
         if (end <= 0L) return -1
