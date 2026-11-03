@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun selectDuration(minutes: Int) {
         if (BlockVpnService.isRunning) {
-            Toast.makeText(this, "أوقف وضع الصمود أولًا لتغيير المدة", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "أوقف التشغيل أولًا لتغيير المدة", Toast.LENGTH_SHORT).show()
             return
         }
         selectedMinutes = minutes
@@ -152,7 +152,7 @@ class MainActivity : AppCompatActivity() {
         binding.statusDot.setBackgroundResource(
             if (active) R.drawable.dot_active else R.drawable.dot_inactive
         )
-        binding.btnToggle.text = if (active) "إيقاف وضع الصمود" else "تشغيل وضع الصمود"
+        binding.btnToggle.text = if (active) "إيقاف" else "تشغيل"
 
         if (active) {
             val remaining = DurationHelper.getRemainingMinutes(this)
