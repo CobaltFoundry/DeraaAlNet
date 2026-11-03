@@ -11,8 +11,8 @@ android {
         applicationId = "com.somood.app"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "0.9.0.1"
+        versionCode = 2
+        versionName = "0.9.0.2"
     }
 
     buildTypes {
