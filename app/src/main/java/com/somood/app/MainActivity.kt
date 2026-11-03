@@ -1,245 +1,186 @@
-package com.somood.app
+Looperpackage com.somood.app
 
 import android.app.Activity
 import android.content.Intent
-import android.net.Uri
 import android.net.VpnService
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.os.PowerManager
-import android.provider.Settings
-import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.somood.app.databinding.ActivityMainBinding
-import java.util.Calendar
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val handler = Handler(Looper.getMainLooper())
-    private val updateRunnable = object : Runnable {
+    private val tick = object : Runnable {
         override fun run() {
             updateUI()
             handler.postDelayed(this, 1000)
         }
     }
-
-    private val VPN_REQUEST_CODE = 1001
+    private val VPN_REQ = 1001
+    private var selectedMinutes = 60
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        ScheduleHelper.scheduleDaily(this)
-        LogHelper.init(this)
-        requestBatteryOptimizationExemption()
-        requestExactAlarmPermission()
+        selectedMinutes = DurationHelper.getSelectedMinutes(this)
+        setupChips()
+        highlightChip()
 
+        binding.btnToggle.setOnClickListener {
+            if (BlockVpnService.isRunning) confirmStop() else requestVpn()
+        }
+        binding.btnApps.setOnClickListener {
+            startActivity(Intent(this, AppsActivity::class.java))
+        }
         binding.btnLog.setOnClickListener {
             startActivity(Intent(this, LogActivity::class.java))
-        }
-
-        binding.btnShare.setOnClickListener {
-            val url = getString(R.string.telegram_url)
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-        }
-
-        binding.btnMenu.setOnClickListener {
-            // قائمة لاحقًا
-        }
-
-        binding.progressRing.setOnClickListener {
-            onToggleClicked()
         }
     }
 
     override fun onResume() {
         super.onResume()
-        ScheduleHelper.scheduleDaily(this)
-        handler.post(updateRunnable)
+        binding.btnApps.text = "التطبيقات المسموحة (${WhitelistHelper.count(this)})"
+        handler.post(tick)
     }
 
     override fun onPause() {
         super.onPause()
-        handler.removeCallbacks(updateRunnable)
+        handler.removeCallbacks(tick)
     }
 
-    private fun requestBatteryOptimizationExemption() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val pm = getSystemService(POWER_SERVICE) as PowerManager
-            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-                try {
-                    val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-                        data = Uri.parse("package:$packageName")
-                    }
-                    startActivity(intent)
-                } catch (e: Exception) {
-                    try {
-                        startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
-                    } catch (_: Exception) {
-                    }
-                }
-            }
-        }
+    private fun setupChips() {
+        binding.chip30.setOnClickListener { selectDuration(30) }
+        binding.chip60.setOnClickListener { selectDuration(60) }
+        binding.chip120.setOnClickListener { selectDuration(120) }
+        binding.chip180.setOnClickListener { selectDuration(180) }
+        binding.chipUntil.setOnClickListener { selectDuration(0) }
     }
 
-    private fun requestExactAlarmPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (!ScheduleHelper.canScheduleExact(this)) {
-                try {
-                    val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
-                        data = Uri.parse("package:$packageName")
-                    }
-                    startActivity(intent)
-                } catch (_: Exception) {
-                }
-            }
-        }
-    }
-
-    private fun onToggleClicked() {
+    private fun selectDuration(minutes: Int) {
         if (BlockVpnService.isRunning) {
-            showStopConfirm()
-        } else {
-            requestVpnPermission()
+            Toast.makeText(this, "أوقف وضع الصمود أولًا لتغيير المدة", Toast.LENGTH_SHORT).show()
+            return
+        }
+        selectedMinutes = minutes
+        DurationHelper.setSelectedMinutes(this, minutes)
+        highlightChip()
+        updateUI()
+    }
+
+    private fun highlightChip() {
+        val chips = listOf(
+            binding.chip30 to 30,
+            binding.chip60 to 60,
+            binding.chip120 to 120,
+            binding.chip180 to 180,
+            binding.chipUntil to 0
+        )
+        chips.forEach { (view, value) ->
+            val selected = value == selectedMinutes
+            view.setTextColor(
+                ContextCompat.getColor(this, if (selected) R.color.primary else R.color.text_secondary)
+            )
+            view.alpha = if (selected) 1f else 0.7f
+            view.setBackgroundResource(if (selected) R.drawable.chip_bg else R.drawable.chip_bg)
         }
     }
 
-    private fun showStopConfirm() {
-        AlertDialog.Builder(this)
-            .setTitle(R.string.confirm_title)
-            .setMessage(R.string.confirm_message)
-            .setPositiveButton(R.string.confirm_yes) { _, _ ->
-                stopVpn()
-            }
-            .setNegativeButton(R.string.confirm_no, null)
-            .show()
-    }
-
-    private fun requestVpnPermission() {
+    private fun requestVpn() {
         val intent = VpnService.prepare(this)
-        if (intent != null) {
-            startActivityForResult(intent, VPN_REQUEST_CODE)
-        } else {
-            startVpn()
-        }
+        if (intent != null) startActivityForResult(intent, VPN_REQ) else startVpn()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == VPN_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            startVpn()
-        } else if (requestCode == VPN_REQUEST_CODE) {
+        if (requestCode == VPN_REQ && resultCode == Activity.RESULT_OK) startVpn()
+        else if (requestCode == VPN_REQ)
             Toast.makeText(this, R.string.vpn_permission_needed, Toast.LENGTH_LONG).show()
-        }
     }
 
     private fun startVpn() {
-        val intent = Intent(this, BlockVpnService::class.java).apply {
+        val i = Intent(this, BlockVpnService::class.java).apply {
             action = BlockVpnService.ACTION_START
         }
-        startForegroundService(intent)
+        startForegroundService(i)
+        ScheduleHelper.scheduleStopAfter(this, selectedMinutes)
         updateUI()
     }
 
+    private fun confirmStop() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.confirm_title)
+            .setMessage(R.string.confirm_message)
+            .setPositiveButton(R.string.confirm_yes) { _, _ -> stopVpn() }
+            .setNegativeButton(R.string.confirm_no, null)
+            .show()
+    }
+
     private fun stopVpn() {
-        val intent = Intent(this, BlockVpnService::class.java).apply {
+        ScheduleHelper.cancelStop(this)
+        val i = Intent(this, BlockVpnService::class.java).apply {
             action = BlockVpnService.ACTION_STOP
         }
-        startService(intent)
+        startService(i)
         updateUI()
     }
 
     private fun updateUI() {
-        val isActive = BlockVpnService.isRunning
-        val minutesLeft = getMinutesLeftInWindow()
-        val inScheduledWindow = isInScheduledWindow()
-
-        binding.statusText.text = if (isActive) {
-            getString(R.string.status_active)
-        } else {
-            getString(R.string.status_inactive)
-        }
+        val active = BlockVpnService.isRunning
+        binding.statusText.text = if (active) "نشط" else "غير نشط"
         binding.statusText.setTextColor(
-            getColor(if (isActive) R.color.green_active else R.color.text_secondary)
+            ContextCompat.getColor(this, if (active) R.color.green_active else R.color.text_secondary)
         )
         binding.statusDot.setBackgroundResource(
-            if (isActive) R.drawable.dot_active else R.drawable.dot_inactive
+            if (active) R.drawable.dot_active else R.drawable.dot_inactive
         )
+        binding.btnToggle.text = if (active) "إيقاف وضع الصمود" else "تشغيل وضع الصمود"
 
-        // حالة الجدولة
-        binding.scheduleStatus.text = "الجدولة اليومية مفعّلة ✓"
-        binding.scheduleStatus.setTextColor(getColor(R.color.green_active))
-
-        when {
-            isActive && inScheduledWindow && minutesLeft > 0 -> {
-                val hours = minutesLeft / 60
-                val mins = minutesLeft % 60
-                val timeStr = String.format("%d:%02d", hours, mins)
-                binding.countdownText.text = toArabicDigits(timeStr)
-
-                val elapsed = (180 - minutesLeft).coerceIn(0, 180)
-                binding.progressRing.progress = elapsed
-
-                binding.remainingText.text =
-                    "متبقى ${toArabicDigits(minutesLeft.toString())} دقيقة على نهاية وضع الصمود"
-                binding.remainingChip.visibility = View.VISIBLE
-            }
-
-            isActive && !inScheduledWindow -> {
+        if (active) {
+            val remaining = DurationHelper.getRemainingMinutes(this)
+            if (remaining >= 0) {
+                // تنازلي
+                val h = remaining / 60
+                val m = remaining % 60
+                binding.countdownText.text = toArabic("%d:%02d".format(h, m))
+                binding.countdownLabel.text = "متبقي"
+                val total = selectedMinutes.coerceAtLeast(1)
+                val done = ((total - remaining) * 100 / total).coerceIn(0, 100)
+                binding.progressRing.progress = done
+            } else {
+                // تصاعدي لحد ما يوقف
                 val elapsed = LogHelper.getSessionElapsedMinutes(this)
-                val hours = elapsed / 60
-                val mins = elapsed % 60
-                val timeStr = String.format("%d:%02d", hours, mins)
-                binding.countdownText.text = toArabicDigits(timeStr)
-
-                binding.progressRing.progress = elapsed.coerceIn(0, 180)
-
-                binding.remainingText.text =
-                    "${toArabicDigits(elapsed.toString())} دقيقة من غير نت\n💪 عاش 💪"
-                binding.remainingChip.visibility = View.VISIBLE
+                val h = elapsed / 60
+                val m = elapsed % 60
+                binding.countdownText.text = toArabic("%d:%02d".format(h, m))
+                binding.countdownLabel.text = "من غير نت"
+                binding.progressRing.progress = (elapsed % 100)
             }
-
-            else -> {
-                binding.countdownText.text = toArabicDigits("٠:٠٠")
-                binding.progressRing.progress = 0
-                binding.remainingChip.visibility = View.GONE
+        } else {
+            if (selectedMinutes > 0) {
+                val h = selectedMinutes / 60
+                val m = selectedMinutes % 60
+                binding.countdownText.text = toArabic("%d:%02d".format(h, m))
+                binding.countdownLabel.text = "المدة المختارة"
+            } else {
+                binding.countdownText.text = toArabic("٠:٠٠")
+                binding.countdownLabel.text = "لحد ما توقف"
             }
+            binding.progressRing.progress = 0
         }
     }
 
-    private fun isInScheduledWindow(): Boolean {
-        val now = Calendar.getInstance()
-        val totalMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE)
-        val start = 18 * 60
-        val end = 21 * 60
-        return totalMinutes in start until end
-    }
-
-    private fun getMinutesLeftInWindow(): Int {
-        if (!isInScheduledWindow()) return 0
-        val now = Calendar.getInstance()
-        val end = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 21)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-        val diffMs = end.timeInMillis - now.timeInMillis
-        return (diffMs / 60000).toInt().coerceAtLeast(0)
-    }
-
-    private fun toArabicDigits(input: String): String {
-        val western = "0123456789"
-        val eastern = "٠١٢٣٤٥٦٧٨٩"
-        return input.map { c ->
-            val idx = western.indexOf(c)
-            if (idx >= 0) eastern[idx] else c
-        }.joinToString("")
+    private fun toArabic(s: String): String {
+        val w = "0123456789"
+        val e = "٠١٢٣٤٥٦٧٨٩"
+        return s.map { c -> val i = w.indexOf(c); if (i >= 0) e[i] else c }.joinToString("")
     }
 }
