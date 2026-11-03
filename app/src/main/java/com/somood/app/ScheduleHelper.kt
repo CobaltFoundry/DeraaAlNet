@@ -1,4 +1,4 @@
-Buildpackage com.somood.app
+package com.somood.app
 
 import android.app.AlarmManager
 import android.app.PendingIntent
@@ -27,7 +27,7 @@ object ScheduleHelper {
             } else {
                 am.setExact(AlarmManager.RTC_WAKEUP, endAt, pi)
             }
-        } catch (_: SecurityException) {
+        } catch (e: SecurityException) {
             am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, endAt, pi)
         }
     }
@@ -48,12 +48,15 @@ object ScheduleHelper {
         )
     }
 
-    // للتوافق مع الكود القديم
-    fun scheduleDaily(context: Context) { /* معطّل — مفيش جدولة يومية */ }
+    fun scheduleDaily(context: Context) {
+    }
+
     fun canScheduleExact(context: Context): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             am.canScheduleExactAlarms()
-        } else true
+        } else {
+            true
+        }
     }
 }
