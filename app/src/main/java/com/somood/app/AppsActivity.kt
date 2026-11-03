@@ -40,22 +40,26 @@ class AppsActivity : AppCompatActivity() {
         binding.search.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 val q = s?.toString()?.trim()?.lowercase().orEmpty()
-                val filtered = if (q.isEmpty()) allApps
-                else allApps.filter {
-                    it.name.lowercase().contains(q) || it.packageName.lowercase().contains(q)
+                val filtered = if (q.isEmpty()) {
+                    allApps
+                } else {
+                    allApps.filter {
+                        it.name.lowercase().contains(q) ||
+                            it.packageName.lowercase().contains(q)
+                    }
                 }
                 adapter.update(filtered)
             }
+
             override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
             override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
         })
 
         binding.btnSave.setOnClickListener {
-            val selected = adapter.currentItems().filter { it.allowed }.map { it.packageName }.toSet()
+            val selected = allApps.filter { it.allowed }.map { it.packageName }.toSet()
             WhitelistHelper.savePackages(this, selected)
             Toast.makeText(this, "تم الحفظ (${selected.size})", Toast.LENGTH_SHORT).show()
 
-            // لو الصمود شغال، نعيد التشغيل عشان الاستثناء يتطبق
             if (BlockVpnService.isRunning) {
                 val stop = Intent(this, BlockVpnService::class.java).apply {
                     action = BlockVpnService.ACTION_STOP
@@ -77,12 +81,14 @@ class AppsActivity : AppCompatActivity() {
         val apps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
         return apps
             .filter { app ->
+                // تطبيقات المستخدم فقط — بلاش تطبيقات النظام
+                if ((app.flags and ApplicationInfo.FLAG_SYSTEM) != 0) return@filter false
                 if (app.packageName == packageName) return@filter false
                 try {
                     val info = pm.getPackageInfo(app.packageName, PackageManager.GET_PERMISSIONS)
                     info.requestedPermissions?.contains(android.Manifest.permission.INTERNET) == true
                 } catch (_: Exception) {
-                    (app.flags and ApplicationInfo.FLAG_SYSTEM) == 0
+                    true
                 }
             }
             .map {
