@@ -32,7 +32,6 @@
             android:fontFamily="@font/tajawal"
             android:layout_marginBottom="24dp" />
 
-        <!-- Ring -->
         <FrameLayout
             android:layout_width="220dp"
             android:layout_height="220dp"
@@ -78,21 +77,11 @@
             </LinearLayout>
         </FrameLayout>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="وضع الصمود"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:fontFamily="@font/tajawal" />
-
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginTop="6dp"
             android:layout_marginBottom="20dp">
 
             <View
@@ -112,7 +101,6 @@
                 android:layout_marginStart="8dp" />
         </LinearLayout>
 
-        <!-- Duration chips -->
         <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -126,11 +114,30 @@
                 android:orientation="horizontal"
                 android:layout_gravity="center_horizontal">
 
-                <TextView android:id="@+id/chip30" style="@style/DurationChip" android:text="٣٠ د" />
-                <TextView android:id="@+id/chip60" style="@style/DurationChip" android:text="١ س" />
-                <TextView android:id="@+id/chip120" style="@style/DurationChip" android:text="٢ س" />
-                <TextView android:id="@+id/chip180" style="@style/DurationChip" android:text="٣ س" />
-                <TextView android:id="@+id/chipUntil" style="@style/DurationChip" android:text="لحد ما أوقف" />
+                <TextView
+                    android:id="@+id/chip30"
+                    style="@style/DurationChip"
+                    android:text="٣٠ د" />
+
+                <TextView
+                    android:id="@+id/chip60"
+                    style="@style/DurationChip"
+                    android:text="١ س" />
+
+                <TextView
+                    android:id="@+id/chip120"
+                    style="@style/DurationChip"
+                    android:text="٢ س" />
+
+                <TextView
+                    android:id="@+id/chip180"
+                    style="@style/DurationChip"
+                    android:text="٣ س" />
+
+                <TextView
+                    android:id="@+id/chipUntil"
+                    style="@style/DurationChip"
+                    android:text="لحد ما أوقف" />
             </LinearLayout>
         </HorizontalScrollView>
 
@@ -138,7 +145,7 @@
             android:id="@+id/btnToggle"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:text="تشغيل وضع الصمود"
+            android:text="تشغيل"
             android:textSize="16sp"
             android:fontFamily="@font/tajawal"
             app:backgroundTint="#00A6D0"
