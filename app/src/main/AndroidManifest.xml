@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+uses-permission<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
 
     <application
         android:allowBackup="true"
@@ -33,6 +34,12 @@
         <activity
             android:name=".MainActivity"
             android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".AppsActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait" />
 
         <activity
@@ -66,5 +73,4 @@
             android:exported="false" />
 
     </application>
-
 </manifest>
