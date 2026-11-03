@@ -20,7 +20,8 @@ class BlockVpnService : VpnService() {
         const val ACTION_STOP = "com.somood.app.STOP"
         const val CHANNEL_ID = "somood_vpn"
         const val NOTIF_ID = 42
-        @Volatile var isRunning = false
+        @Volatile
+        var isRunning = false
     }
 
     private var vpnInterface: ParcelFileDescriptor? = null
@@ -48,7 +49,6 @@ class BlockVpnService : VpnService() {
             .addAddress("10.0.0.2", 32)
             .addRoute("0.0.0.0", 0)
 
-        // التطبيقات المستثناة = تعدّي النت عادي (خارج الـ VPN)
         val whitelist = WhitelistHelper.getPackages(this)
         for (pkg in whitelist) {
             try {
@@ -56,7 +56,6 @@ class BlockVpnService : VpnService() {
             } catch (_: Exception) {
             }
         }
-        // تطبيقنا نفسه برّه الـ VPN
         try {
             builder.addDisallowedApplication(packageName)
         } catch (_: Exception) {
@@ -72,7 +71,6 @@ class BlockVpnService : VpnService() {
         running = true
         LogHelper.startSession(this)
 
-        // قراءة ورمي الباكيتات (قطع النت)
         val fd = vpnInterface!!
         thread(name = "vpn-loop", isDaemon = true) {
             val input = FileInputStream(fd.fileDescriptor)
@@ -82,7 +80,6 @@ class BlockVpnService : VpnService() {
                     buffer.clear()
                     val len = input.read(buffer.array())
                     if (len <= 0) break
-                    // drop
                 }
             } catch (_: Exception) {
             }
@@ -107,7 +104,7 @@ class BlockVpnService : VpnService() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val nm = getSystemService(NotificationManager::class.java)
             nm.createNotificationChannel(
-                NotificationChannel(CHANNEL_ID, "وضع الصمود", NotificationManager.IMPORTANCE_LOW)
+                NotificationChannel(CHANNEL_ID, "درع النت", NotificationManager.IMPORTANCE_LOW)
             )
         }
     }
@@ -120,7 +117,7 @@ class BlockVpnService : VpnService() {
         )
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("درع النت")
-            .setContentText("وضع الصمود نشط — النت مقطوع")
+            .setContentText("النت مقطوع")
             .setSmallIcon(android.R.drawable.ic_lock_lock)
             .setContentIntent(open)
             .setOngoing(true)
