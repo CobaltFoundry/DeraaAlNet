@@ -1,4 +1,4 @@
-Looperpackage com.somood.app
+package com.somood.app
 
 import android.app.Activity
 import android.content.Intent
@@ -6,7 +6,6 @@ import android.net.VpnService
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -87,23 +86,31 @@ class MainActivity : AppCompatActivity() {
         chips.forEach { (view, value) ->
             val selected = value == selectedMinutes
             view.setTextColor(
-                ContextCompat.getColor(this, if (selected) R.color.primary else R.color.text_secondary)
+                ContextCompat.getColor(
+                    this,
+                    if (selected) R.color.primary else R.color.text_secondary
+                )
             )
             view.alpha = if (selected) 1f else 0.7f
-            view.setBackgroundResource(if (selected) R.drawable.chip_bg else R.drawable.chip_bg)
         }
     }
 
     private fun requestVpn() {
         val intent = VpnService.prepare(this)
-        if (intent != null) startActivityForResult(intent, VPN_REQ) else startVpn()
+        if (intent != null) {
+            startActivityForResult(intent, VPN_REQ)
+        } else {
+            startVpn()
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == VPN_REQ && resultCode == Activity.RESULT_OK) startVpn()
-        else if (requestCode == VPN_REQ)
+        if (requestCode == VPN_REQ && resultCode == Activity.RESULT_OK) {
+            startVpn()
+        } else if (requestCode == VPN_REQ) {
             Toast.makeText(this, R.string.vpn_permission_needed, Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun startVpn() {
@@ -137,7 +144,10 @@ class MainActivity : AppCompatActivity() {
         val active = BlockVpnService.isRunning
         binding.statusText.text = if (active) "نشط" else "غير نشط"
         binding.statusText.setTextColor(
-            ContextCompat.getColor(this, if (active) R.color.green_active else R.color.text_secondary)
+            ContextCompat.getColor(
+                this,
+                if (active) R.color.green_active else R.color.text_secondary
+            )
         )
         binding.statusDot.setBackgroundResource(
             if (active) R.drawable.dot_active else R.drawable.dot_inactive
@@ -147,7 +157,6 @@ class MainActivity : AppCompatActivity() {
         if (active) {
             val remaining = DurationHelper.getRemainingMinutes(this)
             if (remaining >= 0) {
-                // تنازلي
                 val h = remaining / 60
                 val m = remaining % 60
                 binding.countdownText.text = toArabic("%d:%02d".format(h, m))
@@ -156,13 +165,12 @@ class MainActivity : AppCompatActivity() {
                 val done = ((total - remaining) * 100 / total).coerceIn(0, 100)
                 binding.progressRing.progress = done
             } else {
-                // تصاعدي لحد ما يوقف
                 val elapsed = LogHelper.getSessionElapsedMinutes(this)
                 val h = elapsed / 60
                 val m = elapsed % 60
                 binding.countdownText.text = toArabic("%d:%02d".format(h, m))
                 binding.countdownLabel.text = "من غير نت"
-                binding.progressRing.progress = (elapsed % 100)
+                binding.progressRing.progress = elapsed % 100
             }
         } else {
             if (selectedMinutes > 0) {
@@ -181,6 +189,9 @@ class MainActivity : AppCompatActivity() {
     private fun toArabic(s: String): String {
         val w = "0123456789"
         val e = "٠١٢٣٤٥٦٧٨٩"
-        return s.map { c -> val i = w.indexOf(c); if (i >= 0) e[i] else c }.joinToString("")
+        return s.map { c ->
+            val i = w.indexOf(c)
+            if (i >= 0) e[i] else c
+        }.joinToString("")
     }
 }
