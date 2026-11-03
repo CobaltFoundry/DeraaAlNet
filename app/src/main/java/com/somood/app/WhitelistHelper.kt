@@ -21,4 +21,4 @@ object WhitelistHelper {
     }
 
     fun count(context: Context): Int = getPackages(context).size
-}
+} 
