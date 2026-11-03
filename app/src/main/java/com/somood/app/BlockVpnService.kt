@@ -10,8 +10,8 @@ import android.os.Build
 import android.os.ParcelFileDescriptor
 import androidx.core.app.NotificationCompat
 import java.io.FileInputStream
-import java.io.IOException
 import java.nio.ByteBuffer
+import kotlin.concurrent.thread
 
 class BlockVpnService : VpnService() {
 
@@ -19,109 +19,116 @@ class BlockVpnService : VpnService() {
         const val ACTION_START = "com.somood.app.START"
         const val ACTION_STOP = "com.somood.app.STOP"
         const val CHANNEL_ID = "somood_vpn"
-        const val NOTIF_ID = 1
-
-        @Volatile
-        var isRunning = false
-            private set
+        const val NOTIF_ID = 42
+        @Volatile var isRunning = false
     }
 
     private var vpnInterface: ParcelFileDescriptor? = null
-    private var thread: Thread? = null
+    private var running = false
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
-            ACTION_START -> startBlocking()
-            ACTION_STOP -> stopBlocking()
+            ACTION_STOP -> {
+                stopBlock()
+                return START_NOT_STICKY
+            }
+            else -> startBlock()
         }
         return START_STICKY
     }
 
-    private fun startBlocking() {
+    private fun startBlock() {
         if (isRunning) return
-
-        createNotificationChannel()
+        createChannel()
         startForeground(NOTIF_ID, buildNotification())
 
         val builder = Builder()
             .setSession("درع النت")
+            .setMtu(1500)
             .addAddress("10.0.0.2", 32)
             .addRoute("0.0.0.0", 0)
-            .addDnsServer("1.1.1.1")
-            .setMtu(1500)
-            .setBlocking(true)
 
-        try {
-            vpnInterface = builder.establish()
-            if (vpnInterface == null) {
-                stopSelf()
-                return
+        // التطبيقات المستثناة = تعدّي النت عادي (خارج الـ VPN)
+        val whitelist = WhitelistHelper.getPackages(this)
+        for (pkg in whitelist) {
+            try {
+                builder.addDisallowedApplication(pkg)
+            } catch (_: Exception) {
             }
-            isRunning = true
-            LogHelper.startSession(this)
+        }
+        // تطبيقنا نفسه برّه الـ VPN
+        try {
+            builder.addDisallowedApplication(packageName)
+        } catch (_: Exception) {
+        }
 
-            thread = Thread {
-                val buffer = ByteBuffer.allocate(32767)
-                val input = FileInputStream(vpnInterface!!.fileDescriptor)
-                try {
-                    while (isRunning && !Thread.interrupted()) {
-                        buffer.clear()
-                        val length = input.read(buffer.array())
-                        if (length > 0) {
-                            // drop all packets → internet blocked
-                        }
-                    }
-                } catch (e: IOException) {
-                    // expected on close
+        vpnInterface = builder.establish()
+        if (vpnInterface == null) {
+            stopSelf()
+            return
+        }
+
+        isRunning = true
+        running = true
+        LogHelper.startSession(this)
+
+        // قراءة ورمي الباكيتات (قطع النت)
+        val fd = vpnInterface!!
+        thread(name = "vpn-loop", isDaemon = true) {
+            val input = FileInputStream(fd.fileDescriptor)
+            val buffer = ByteBuffer.allocate(32767)
+            try {
+                while (running) {
+                    buffer.clear()
+                    val len = input.read(buffer.array())
+                    if (len <= 0) break
+                    // drop
                 }
-            }.also { it.start() }
-        } catch (e: Exception) {
-            stopBlocking()
+            } catch (_: Exception) {
+            }
         }
     }
 
-    private fun stopBlocking() {
+    private fun stopBlock() {
+        running = false
         isRunning = false
-        thread?.interrupt()
-        thread = null
+        LogHelper.endSession(this)
+        DurationHelper.clearSessionEnd(this)
         try {
             vpnInterface?.close()
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+        }
         vpnInterface = null
-        LogHelper.endSession(this)
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
 
-    override fun onDestroy() {
-        stopBlocking()
-        super.onDestroy()
-    }
-
-    private fun createNotificationChannel() {
+    private fun createChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "وضع الصمود",
-                NotificationManager.IMPORTANCE_LOW
-            )
             val nm = getSystemService(NotificationManager::class.java)
-            nm.createNotificationChannel(channel)
+            nm.createNotificationChannel(
+                NotificationChannel(CHANNEL_ID, "وضع الصمود", NotificationManager.IMPORTANCE_LOW)
+            )
         }
     }
 
     private fun buildNotification(): Notification {
-        val pending = PendingIntent.getActivity(
+        val open = PendingIntent.getActivity(
             this, 0,
             Intent(this, MainActivity::class.java),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(getString(R.string.notification_title))
-            .setContentText(getString(R.string.notification_text))
+            .setContentTitle("درع النت")
+            .setContentText("وضع الصمود نشط — النت مقطوع")
             .setSmallIcon(android.R.drawable.ic_lock_lock)
-            .setContentIntent(pending)
+            .setContentIntent(open)
             .setOngoing(true)
             .build()
+    }
+
+    override fun onDestroy() {
+        stopBlock()
+        super.onDestroy()
     }
 }
