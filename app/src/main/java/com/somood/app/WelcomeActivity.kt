@@ -45,7 +45,6 @@ class WelcomeActivity : AppCompatActivity() {
 
         binding.btnStart.setOnClickListener {
             prefs.edit().putBoolean("onboarding_done", true).apply()
-            ScheduleHelper.scheduleDaily(this)
             startActivity(Intent(this, MainActivity::class.java))
             finish()
         }

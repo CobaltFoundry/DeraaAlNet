@@ -3,179 +3,229 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0B0F14"
-    android:fillViewport="true">
+    android:background="@color/background"
+    android:fillViewport="true"
+    android:layoutDirection="rtl">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="20dp"
-        android:gravity="center_horizontal">
+        android:padding="24dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/app_name"
-            android:textColor="#FFFFFF"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:fontFamily="@font/tajawal"
-            android:layout_marginTop="8dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="قطع النت حسب مدتك — مع استثناء تطبيقات"
-            android:textColor="#8A9BA8"
-            android:textSize="13sp"
-            android:fontFamily="@font/tajawal"
-            android:layout_marginBottom="24dp" />
-
-        <FrameLayout
-            android:layout_width="220dp"
-            android:layout_height="220dp"
-            android:layout_marginBottom="16dp">
-
-            <ProgressBar
-                android:id="@+id/progressRing"
-                style="?android:attr/progressBarStyleHorizontal"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:indeterminate="false"
-                android:max="100"
-                android:progress="0"
-                android:progressDrawable="@drawable/circular_progress"
-                android:rotation="-90" />
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:orientation="vertical"
-                android:gravity="center">
-
-                <TextView
-                    android:id="@+id/countdownText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="٠:٠٠"
-                    android:textColor="#00B4FF"
-                    android:textSize="40sp"
-                    android:textStyle="bold"
-                    android:fontFamily="@font/tajawal"
-                    android:includeFontPadding="false" />
-
-                <TextView
-                    android:id="@+id/countdownLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="دقيقة"
-                    android:textColor="#6B7C8A"
-                    android:textSize="13sp"
-                    android:fontFamily="@font/tajawal" />
-            </LinearLayout>
-        </FrameLayout>
-
+        <!-- الهيدر -->
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="20dp">
-
-            <View
-                android:id="@+id/statusDot"
-                android:layout_width="8dp"
-                android:layout_height="8dp"
-                android:background="@drawable/dot_inactive" />
+            android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/statusText"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="غير نشط"
-                android:textColor="#8A9BA8"
-                android:textSize="14sp"
+                android:layout_weight="1"
                 android:fontFamily="@font/tajawal"
-                android:layout_marginStart="8dp" />
-        </LinearLayout>
-
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:scrollbars="none"
-            android:layout_marginBottom="16dp">
+                android:text="@string/app_name"
+                android:textColor="@color/text_primary"
+                android:textSize="22sp"
+                android:textStyle="bold" />
 
             <LinearLayout
-                android:id="@+id/durationRow"
+                android:id="@+id/statusPill"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:background="@drawable/pill_off"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="14dp">
+
+                <View
+                    android:id="@+id/statusDot"
+                    android:layout_width="8dp"
+                    android:layout_height="8dp"
+                    android:background="@drawable/dot_off" />
+
+                <TextView
+                    android:id="@+id/statusText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:fontFamily="@font/tajawal"
+                    android:text="النت شغال"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- الزر الرئيسي -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:minHeight="400dp"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/btnToggle"
+                android:layout_width="248dp"
+                android:layout_height="248dp"
+                android:background="@drawable/power_bg_off"
+                android:contentDescription="اقطع النت"
+                android:scaleType="center"
+                android:src="@drawable/ic_power" />
+
+            <TextView
+                android:id="@+id/countdownText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:fontFamily="@font/tajawal"
+                android:gravity="center"
+                android:text="اضغط عشان تقطع النت"
+                android:textColor="@color/text_primary"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/countdownLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:fontFamily="@font/tajawal"
+                android:gravity="center"
+                android:text="التطبيقات المسموحة هتفضل شغالة"
+                android:textColor="@color/text_secondary"
+                android:textSize="15sp" />
+        </LinearLayout>
+
+        <!-- الكروت -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/card_surface"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/btnApps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:minHeight="64dp"
                 android:orientation="horizontal"
-                android:layout_gravity="center_horizontal">
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="14dp">
 
-                <TextView
-                    android:id="@+id/chip30"
-                    style="@style/DurationChip"
-                    android:text="٣٠ د" />
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_apps"
+                    app:tint="@color/text_secondary" />
 
-                <TextView
-                    android:id="@+id/chip60"
-                    style="@style/DurationChip"
-                    android:text="١ س" />
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="14dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/chip120"
-                    style="@style/DurationChip"
-                    android:text="٢ س" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/tajawal"
+                        android:text="التطبيقات المسموحة"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp" />
 
-                <TextView
-                    android:id="@+id/chip180"
-                    style="@style/DurationChip"
-                    android:text="٣ س" />
+                    <TextView
+                        android:id="@+id/appsSubtitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/tajawal"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="13sp" />
+                </LinearLayout>
 
-                <TextView
-                    android:id="@+id/chipUntil"
-                    style="@style/DurationChip"
-                    android:text="لحد ما أوقف" />
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_chevron"
+                    app:tint="@color/text_secondary" />
             </LinearLayout>
-        </HorizontalScrollView>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnToggle"
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/line" />
+
+            <LinearLayout
+                android:id="@+id/btnLog"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:minHeight="64dp"
+                android:orientation="horizontal"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="14dp">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_chart"
+                    app:tint="@color/text_secondary" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="14dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/tajawal"
+                        android:text="السجل"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:id="@+id/logSubtitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/tajawal"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_chevron"
+                    app:tint="@color/text_secondary" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- التوقيع -->
+        <TextView
+            android:id="@+id/footerText"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:text="تشغيل"
-            android:textSize="16sp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
             android:fontFamily="@font/tajawal"
-            app:backgroundTint="#00A6D0"
-            app:cornerRadius="14dp"
-            android:layout_marginBottom="12dp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnApps"
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:text="التطبيقات المسموحة (٠)"
-            android:textSize="14sp"
-            android:fontFamily="@font/tajawal"
-            android:textColor="#FFFFFF"
-            app:backgroundTint="#1A222C"
-            app:cornerRadius="14dp"
-            app:strokeColor="#2A3540"
-            app:strokeWidth="1dp"
-            android:layout_marginBottom="12dp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnLog"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:text="السجل"
-            android:textSize="14sp"
-            android:fontFamily="@font/tajawal"
-            android:textColor="#8A9BA8"
-            app:backgroundTint="#00000000"
-            app:cornerRadius="12dp" />
-
+            android:gravity="center"
+            android:minHeight="48dp"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp" />
     </LinearLayout>
 </ScrollView>

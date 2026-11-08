@@ -1,41 +1,78 @@
 package com.somood.app
 
+import android.Manifest
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.res.ColorStateList
+import android.graphics.Color
+import android.net.Uri
 import android.net.VpnService
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.TextPaint
+import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
+import android.util.TypedValue
+import android.view.View
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import com.somood.app.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+        /** الإشعار بيفتح الشاشة بالـ extra ده عشان الإيقاف يعدّي على نفس خطوة التأكيد. */
+        const val EXTRA_REQUEST_STOP = "request_stop"
+
+        private const val AUTHENTICATORS =
+            BiometricManager.Authenticators.BIOMETRIC_WEAK or
+                BiometricManager.Authenticators.DEVICE_CREDENTIAL
+    }
+
     private lateinit var binding: ActivityMainBinding
     private val handler = Handler(Looper.getMainLooper())
+    private var renderedActive: Boolean? = null
+
     private val tick = object : Runnable {
         override fun run() {
             updateUI()
             handler.postDelayed(this, 1000)
         }
     }
-    private val VPN_REQ = 1001
-    private var selectedMinutes = 60
+
+    private val vpnPermission =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                startBlocking()
+            } else {
+                Toast.makeText(this, R.string.vpn_permission_needed, Toast.LENGTH_LONG).show()
+            }
+        }
+
+    // إذن الإشعارات مش شرط للتشغيل — بنكمّل في الحالتين
+    private val notificationPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { requestVpn() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        selectedMinutes = DurationHelper.getSelectedMinutes(this)
-        setupChips()
-        highlightChip()
+        resumeIfNeeded()
+        setupFooter()
 
         binding.btnToggle.setOnClickListener {
-            if (BlockVpnService.isRunning) confirmStop() else requestVpn()
+            if (SessionState.isActive(this)) requestStop() else begin()
         }
         binding.btnApps.setOnClickListener {
             startActivity(Intent(this, AppsActivity::class.java))
@@ -43,11 +80,20 @@ class MainActivity : AppCompatActivity() {
         binding.btnLog.setOnClickListener {
             startActivity(Intent(this, LogActivity::class.java))
         }
+
+        handleIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleIntent(intent)
     }
 
     override fun onResume() {
         super.onResume()
-        binding.btnApps.text = "التطبيقات المسموحة (${WhitelistHelper.count(this)})"
+        updateSubtitles()
+        renderedActive = null
         handler.post(tick)
     }
 
@@ -56,142 +102,145 @@ class MainActivity : AppCompatActivity() {
         handler.removeCallbacks(tick)
     }
 
-    private fun setupChips() {
-        binding.chip30.setOnClickListener { selectDuration(30) }
-        binding.chip60.setOnClickListener { selectDuration(60) }
-        binding.chip120.setOnClickListener { selectDuration(120) }
-        binding.chip180.setOnClickListener { selectDuration(180) }
-        binding.chipUntil.setOnClickListener { selectDuration(0) }
-    }
-
-    private fun selectDuration(minutes: Int) {
-        if (BlockVpnService.isRunning) {
-            Toast.makeText(this, "أوقف التشغيل أولًا لتغيير المدة", Toast.LENGTH_SHORT).show()
-            return
+    private fun handleIntent(intent: Intent?) {
+        if (intent?.getBooleanExtra(EXTRA_REQUEST_STOP, false) == true) {
+            intent.removeExtra(EXTRA_REQUEST_STOP)
+            if (SessionState.isActive(this)) requestStop()
         }
-        selectedMinutes = minutes
-        DurationHelper.setSelectedMinutes(this, minutes)
-        highlightChip()
-        updateUI()
     }
 
-    private fun highlightChip() {
-        val chips = listOf(
-            binding.chip30 to 30,
-            binding.chip60 to 60,
-            binding.chip120 to 120,
-            binding.chip180 to 180,
-            binding.chipUntil to 0
-        )
-        chips.forEach { (view, value) ->
-            val selected = value == selectedMinutes
-            view.setTextColor(
-                ContextCompat.getColor(
-                    this,
-                    if (selected) R.color.primary else R.color.text_secondary
-                )
-            )
-            view.alpha = if (selected) 1f else 0.7f
+    /** لو الحالة المحفوظة "شغال" بس الخدمة مش شغالة (النظام قتلها)، نرجّعها. */
+    private fun resumeIfNeeded() {
+        if (!SessionState.isActive(this) || BlockVpnService.isRunning) return
+        if (VpnService.prepare(this) == null) {
+            BlockVpnService.start(this)
+        } else {
+            SessionState.end(this) // الصلاحية اتسحبت
+        }
+    }
+
+    // ───────────── التشغيل ─────────────
+
+    private fun begin() {
+        val needsNotifPermission = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
+            PackageManager.PERMISSION_GRANTED
+        if (needsNotifPermission) {
+            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            requestVpn()
         }
     }
 
     private fun requestVpn() {
         val intent = VpnService.prepare(this)
-        if (intent != null) {
-            startActivityForResult(intent, VPN_REQ)
-        } else {
-            startVpn()
-        }
+        if (intent != null) vpnPermission.launch(intent) else startBlocking()
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == VPN_REQ && resultCode == Activity.RESULT_OK) {
-            startVpn()
-        } else if (requestCode == VPN_REQ) {
-            Toast.makeText(this, R.string.vpn_permission_needed, Toast.LENGTH_LONG).show()
-        }
-    }
-
-    private fun startVpn() {
-        val i = Intent(this, BlockVpnService::class.java).apply {
-            action = BlockVpnService.ACTION_START
-        }
-        startForegroundService(i)
-        ScheduleHelper.scheduleStopAfter(this, selectedMinutes)
+    private fun startBlocking() {
+        SessionState.begin(this)
+        BlockVpnService.start(this)
         updateUI()
     }
 
-    private fun confirmStop() {
-        AlertDialog.Builder(this)
-            .setTitle(R.string.confirm_title)
-            .setMessage(R.string.confirm_message)
-            .setPositiveButton(R.string.confirm_yes) { _, _ -> stopVpn() }
-            .setNegativeButton(R.string.confirm_no, null)
-            .show()
+    // ───────────── الإيقاف (بتأكيد من قفل الجهاز) ─────────────
+
+    /**
+     * بيطلب البصمة أو PIN/النمط/كلمة السر بتاعة الموبايل نفسه.
+     * لو الجهاز مفيهوش أي وسيلة حماية، الإيقاف بيتم مباشرةً.
+     */
+    private fun requestStop() {
+        val canAuth = BiometricManager.from(this).canAuthenticate(AUTHENTICATORS)
+        if (canAuth != BiometricManager.BIOMETRIC_SUCCESS) {
+            BlockVpnService.stop(this)
+            return
+        }
+
+        val prompt = BiometricPrompt(
+            this,
+            ContextCompat.getMainExecutor(this),
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    BlockVpnService.stop(this@MainActivity)
+                }
+                // الإلغاء أو الفشل: النت يفضل مقطوع
+            }
+        )
+        val info = BiometricPrompt.PromptInfo.Builder()
+            .setTitle(getString(R.string.confirm_stop_title))
+            .setSubtitle(getString(R.string.confirm_stop_subtitle))
+            .setAllowedAuthenticators(AUTHENTICATORS)
+            .build()
+        prompt.authenticate(info)
     }
 
-    private fun stopVpn() {
-        ScheduleHelper.cancelStop(this)
-        val i = Intent(this, BlockVpnService::class.java).apply {
-            action = BlockVpnService.ACTION_STOP
-        }
-        startService(i)
-        updateUI()
-    }
+    // ───────────── الواجهة ─────────────
 
     private fun updateUI() {
-        val active = BlockVpnService.isRunning
-        binding.statusText.text = if (active) "نشط" else "غير نشط"
-        binding.statusText.setTextColor(
-            ContextCompat.getColor(
-                this,
-                if (active) R.color.green_active else R.color.text_secondary
+        val active = SessionState.isActive(this)
+
+        if (renderedActive != active) {
+            renderedActive = active
+            binding.statusPill.setBackgroundResource(if (active) R.drawable.pill_on else R.drawable.pill_off)
+            binding.statusDot.setBackgroundResource(if (active) R.drawable.dot_on else R.drawable.dot_off)
+            binding.statusText.text = if (active) "النت مقطوع" else "النت شغال"
+            binding.statusText.setTextColor(
+                ContextCompat.getColor(this, if (active) R.color.green_active else R.color.text_secondary)
             )
-        )
-        binding.statusDot.setBackgroundResource(
-            if (active) R.drawable.dot_active else R.drawable.dot_inactive
-        )
-        binding.btnToggle.text = if (active) "إيقاف" else "تشغيل"
+            binding.btnToggle.setBackgroundResource(if (active) R.drawable.power_bg_on else R.drawable.power_bg_off)
+            binding.btnToggle.imageTintList = ColorStateList.valueOf(
+                ContextCompat.getColor(this, if (active) R.color.green_active else R.color.text_primary)
+            )
+            binding.btnToggle.contentDescription = if (active) "رجّع النت" else "اقطع النت"
+            binding.countdownText.setTextSize(TypedValue.COMPLEX_UNIT_SP, if (active) 48f else 22f)
+            binding.countdownLabel.text =
+                if (active) "من غير نت — اضغط الزر عشان ترجّعه" else "التطبيقات المسموحة هتفضل شغالة"
+        }
 
         if (active) {
-            val remaining = DurationHelper.getRemainingMinutes(this)
-            if (remaining >= 0) {
-                val h = remaining / 60
-                val m = remaining % 60
-                binding.countdownText.text = toArabic("%d:%02d".format(h, m))
-                binding.countdownLabel.text = "متبقي"
-                val total = selectedMinutes.coerceAtLeast(1)
-                val done = ((total - remaining) * 100 / total).coerceIn(0, 100)
-                binding.progressRing.progress = done
-            } else {
-                val elapsed = LogHelper.getSessionElapsedMinutes(this)
-                val h = elapsed / 60
-                val m = elapsed % 60
-                binding.countdownText.text = toArabic("%d:%02d".format(h, m))
-                binding.countdownLabel.text = "من غير نت"
-                binding.progressRing.progress = elapsed % 100
-            }
+            val seconds = (System.currentTimeMillis() - SessionState.startedAt(this)) / 1000
+            binding.countdownText.text = Fmt.clock(seconds)
         } else {
-            if (selectedMinutes > 0) {
-                val h = selectedMinutes / 60
-                val m = selectedMinutes % 60
-                binding.countdownText.text = toArabic("%d:%02d".format(h, m))
-                binding.countdownLabel.text = "المدة المختارة"
-            } else {
-                binding.countdownText.text = toArabic("٠:٠٠")
-                binding.countdownLabel.text = "لحد ما توقف"
-            }
-            binding.progressRing.progress = 0
+            binding.countdownText.text = "اضغط عشان تقطع النت"
         }
     }
 
-    private fun toArabic(s: String): String {
-        val w = "0123456789"
-        val e = "٠١٢٣٤٥٦٧٨٩"
-        return s.map { c ->
-            val i = w.indexOf(c)
-            if (i >= 0) e[i] else c
-        }.joinToString("")
+    private fun updateSubtitles() {
+        val apps = WhitelistHelper.count(this)
+        binding.appsSubtitle.text =
+            if (apps == 0) "مفيش تطبيقات مسموحة" else "${Fmt.appsLabel(apps)} هتفضل شغالة"
+
+        val today = LogHelper.todayMinutes(this)
+        binding.logSubtitle.text =
+            if (today == 0) "مفيش قطع النهارده" else "النهارده ${Fmt.minutesLabel(today)} من غير نت"
+    }
+
+    /** "صُنع بـ 💙 بواسطة me.app" — الاسم بيفتح قناة التليجرام. */
+    private fun setupFooter() {
+        val name = getString(R.string.made_by_name)
+        val text = getString(R.string.made_by, name)
+        val start = text.indexOf(name)
+        val spannable = SpannableString(text)
+        if (start >= 0) {
+            spannable.setSpan(object : ClickableSpan() {
+                override fun onClick(widget: View) = openChannel()
+                override fun updateDrawState(ds: TextPaint) {
+                    ds.color = ContextCompat.getColor(this@MainActivity, R.color.green_active)
+                    ds.isUnderlineText = true
+                    ds.isFakeBoldText = true
+                }
+            }, start, start + name.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        binding.footerText.text = spannable
+        binding.footerText.movementMethod = LinkMovementMethod.getInstance()
+        binding.footerText.highlightColor = Color.TRANSPARENT
+    }
+
+    private fun openChannel() {
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.made_by_url))))
+        } catch (_: ActivityNotFoundException) {
+            Toast.makeText(this, getString(R.string.made_by_url), Toast.LENGTH_LONG).show()
+        }
     }
 }

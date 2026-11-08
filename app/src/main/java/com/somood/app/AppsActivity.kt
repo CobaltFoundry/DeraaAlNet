@@ -1,6 +1,5 @@
 package com.somood.app
 
-import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -10,12 +9,14 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.somood.app.databinding.ActivityAppsBinding
+import kotlin.concurrent.thread
 
 class AppsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityAppsBinding
     private lateinit var adapter: AppsAdapter
     private var allApps: List<AppItem> = emptyList()
+    private var loaded = false
 
     data class AppItem(
         val name: String,
@@ -31,57 +32,55 @@ class AppsActivity : AppCompatActivity() {
 
         binding.btnBack.setOnClickListener { finish() }
 
-        val whitelist = WhitelistHelper.getPackages(this).toMutableSet()
-        allApps = loadApps(whitelist)
-        adapter = AppsAdapter(allApps.toMutableList())
+        adapter = AppsAdapter(mutableListOf())
         binding.recycler.layoutManager = LinearLayoutManager(this)
         binding.recycler.adapter = adapter
 
-        binding.search.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                val q = s?.toString()?.trim()?.lowercase().orEmpty()
-                val filtered = if (q.isEmpty()) {
-                    allApps
-                } else {
-                    allApps.filter {
-                        it.name.lowercase().contains(q) ||
-                            it.packageName.lowercase().contains(q)
-                    }
-                }
-                adapter.update(filtered)
+        // تحميل التطبيقات والأيقونات تقيل — بنعمله بره الـ UI thread
+        val whitelist = WhitelistHelper.getPackages(this)
+        thread(name = "load-apps") {
+            val apps = loadApps(whitelist)
+            runOnUiThread {
+                if (isDestroyed) return@runOnUiThread
+                allApps = apps
+                loaded = true
+                applyFilter(binding.search.text?.toString().orEmpty())
             }
+        }
 
+        binding.search.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) = applyFilter(s?.toString().orEmpty())
             override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
             override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
         })
 
         binding.btnSave.setOnClickListener {
+            // لو القائمة لسه بتتحمّل، الحفظ هيمسح القائمة البيضاء بالغلط
+            if (!loaded) return@setOnClickListener
+
             val selected = allApps.filter { it.allowed }.map { it.packageName }.toSet()
             WhitelistHelper.savePackages(this, selected)
-            Toast.makeText(this, "تم الحفظ (${selected.size})", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "تم الحفظ (${Fmt.arabic(selected.size)})", Toast.LENGTH_SHORT).show()
 
-            if (BlockVpnService.isRunning) {
-                val stop = Intent(this, BlockVpnService::class.java).apply {
-                    action = BlockVpnService.ACTION_STOP
-                }
-                startService(stop)
-                binding.root.postDelayed({
-                    val start = Intent(this, BlockVpnService::class.java).apply {
-                        action = BlockVpnService.ACTION_START
-                    }
-                    startForegroundService(start)
-                }, 400)
-            }
+            // لو النت مقطوع دلوقتي، نطبّق القائمة الجديدة فورًا من غير ما نقفل الجلسة
+            if (SessionState.isActive(this)) BlockVpnService.restart(this)
             finish()
         }
     }
 
+    private fun applyFilter(query: String) {
+        val q = query.trim().lowercase()
+        adapter.update(
+            if (q.isEmpty()) allApps
+            else allApps.filter { it.name.lowercase().contains(q) || it.packageName.lowercase().contains(q) }
+        )
+    }
+
+    /** تطبيقات المستخدم اللي بتطلب إنترنت فقط (من غير تطبيقات النظام عشان محدش يقطع حاجة أساسية بالغلط). */
     private fun loadApps(whitelist: Set<String>): List<AppItem> {
         val pm = packageManager
-        val apps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
-        return apps
+        return pm.getInstalledApplications(PackageManager.GET_META_DATA)
             .filter { app ->
-                // تطبيقات المستخدم فقط — بلاش تطبيقات النظام
                 if ((app.flags and ApplicationInfo.FLAG_SYSTEM) != 0) return@filter false
                 if (app.packageName == packageName) return@filter false
                 try {
