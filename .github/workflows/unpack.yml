@@ -33,10 +33,6 @@ jobs:
             echo "zip=${ZIP#./}" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Unpack over the project
-        if: steps.find.outputs.found == 'true'
-        run: bash scripts/unpack.sh "${{ steps.find.outputs.zip }}" .
-
       - name: Remove the zip and commit
         if: steps.find.outputs.found == 'true'
         run: |
