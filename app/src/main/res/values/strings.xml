@@ -5,7 +5,7 @@
     <string name="log_title">السجل</string>
     <string name="no_logs">مفيش سجل لسه</string>
     <string name="made_by">صُنع بـ 💙 بواسطة %1$s</string>
-    <string name="made_by_name">me.app</string>
+    <string name="made_by_name">{me.app}</string>
     <string name="made_by_url">https://t.me/iapp27</string>
     <string name="confirm_stop_title">تأكيد إرجاع النت</string>
     <string name="confirm_stop_subtitle">أكّد إنك إنت اللي بترجّع النت</string>
